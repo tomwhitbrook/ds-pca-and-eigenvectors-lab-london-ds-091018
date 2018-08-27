@@ -20,10 +20,14 @@ import matplotlib.ticker as ticker
 % matplotlib inline
 ```
 
+In the cell below, read in the data from `foodusa.csv` and store in in a pandas DataFrame.  Be sure to set `index_col` to `0`.
+
 
 ```python
 data = pd.read_csv('foodusa.csv', index_col=0)
 ```
+
+Now, display the dataset to ensure everything loaded correctly. 
 
 
 ```python
@@ -261,12 +265,14 @@ As you know from the lecture, we'll perform an eigendecomposition to transform t
 Before doing so, two things are of main importance when 
 We'll first perform 2 steps:
 
-1. Let's look at the current correlation structure of the data and look if nothing stands out.
-2. Let's look at the data distributions and make sure we standardize our data first. As mentioined, we would like to get our data on a unit scale, if you want to get optimal PCA performance in the long run. 
+1. Let's look at the current correlation structure of the data and see if anything stands out.
+2. Let's also look at the data distributions and make sure we standardize our data first. As mentioned, we would like to get our data on a unit scale, if we want to get optimal PCA performance in the long run. 
 
 ## 2. The correlation structure
 
 Before we start, let's have a quick exploratory look at the data. Let's generate the correlation heatmap to see if we can detect anything extraordinary.
+
+Run the cells below to create a Correlation Heatmap of our dataset. 
 
 
 ```python
@@ -286,10 +292,12 @@ plt.show();
 ```
 
 
-![png](output_10_0.png)
+![png](output_12_0.png)
 
 
-This heatmap is useful for tracking unusual correlations. There is nothing really unexpected about this correlation matrix. The diagonal has correlation 1, which makes sense, and all the other correlations seem to be somewhere between 0 and 0.8. In order to perform a succesful PCA, you'd want to have some higher correlations among variables (which seems to be the case here, eg burger/bread and burger/tomatoes) so dimensionality reduction makes sense. If all variables would be uncorrelated, it would be hard to use PCA in order to reduce dimensionality. On the other hand, if all the variables would be perfectly correlates, you should just go ahead and remove columns instead of performing PCA.
+This heatmap is useful for tracking unusual correlations. There is nothing really unexpected about this correlation matrix. The diagonal has correlation 1, which makes sense, and all the other correlations seem to be somewhere between 0 and 0.8. 
+
+In order to perform a succesful PCA, you'd want to have some higher correlations among variables (which seems to be the case here, eg burger/bread and burger/tomatoes) so dimensionality reduction makes sense. If all variables would be uncorrelated, it would be hard to use PCA in order to reduce dimensionality. On the other hand, if variables are perfect correlates, you should just go ahead and remove columns instead of performing PCA.
 
 ## 3. Explore the data distributions
 
@@ -399,18 +407,35 @@ data.describe()
 
 
 
+Let's also plot some histograms of the distribution of our dataset.  
+
+In the cell below, create a histogram of the `data`.  Pass in the following parameters:
+
+* `bins=6`
+* `xlabelsize=8`
+* `ylabelsize=8`
+* `figsize=(8,8)`
+
 
 ```python
 ax = data.hist(bins=6, xlabelsize=8, ylabelsize= 8, figsize=(8,8))
 ```
 
 
-![png](output_15_0.png)
+![png](output_18_0.png)
 
 
-These distributions look approximately normal (note that there are only 23 observations, so it is to be expected that the curves are not perfectly bell-shaped!). Now, let's go ahead and standardize the data. We'll do this manually at first to understand what is going on
+These distributions look approximately normal (note that there are only 23 observations, so it is to be expected that the curves are not perfectly bell-shaped!). 
+
+Now, let's go ahead and standardize the data. We'll do this manually at first to understand what is going on in the process. 
 
 ### 3.1 standardize manually
+
+In the cell below, compute the following values and store them in the appropriate variables.
+
+1. The `mean` of the `data`.
+1. The standard error of the `data`.
+1. A standardized version of the dataset, where each value has had the `avg` subtracted, and then divided by the `std_err`.  
 
 
 ```python
@@ -418,6 +443,8 @@ avg = data.mean()
 std_err = data.std()
 data_std= (data - avg)/ std_err
 ```
+
+Now, display the head of the standardized dataset.
 
 
 ```python
@@ -507,7 +534,7 @@ data_std.head()
 
 
 
-Let's have another look at the distributions now. It seems like nothing really changed here, but be aware of what happend to the x-axis!
+Finally, let's display histograms of this dataset, as we did with the original above.  Pass in the same parameters as you did above when creating these histograms.  
 
 
 ```python
@@ -515,10 +542,16 @@ ax = data_std.hist(bins=6, xlabelsize=8, ylabelsize= 8, figsize=(8,8))
 ```
 
 
-![png](output_21_0.png)
+![png](output_25_0.png)
 
+
+It seems like nothing really changed here, but be aware of what happened to the x-axis!
 
 ### 3.2 Another way to standardize the data
+
+Since this is a common operation, sklearn provides an easy way to scale and transform our dataset by using a `StandardScaler` object's `fit_transform()` method.
+
+Run the cell below to use sklearn to create a scaled version of the dataset, and then inspect the head of this new DataFrame to see how it compares to the dataset we scaled manually.
 
 
 ```python
@@ -607,7 +640,9 @@ data_std_2.head()
 
 
 
-Note that you have to reattach the names of the columns
+Note that you have to reattach the names of the columns.
+
+Run the cell below to reattach the column names.
 
 
 ```python
@@ -694,7 +729,7 @@ data_std_2.head()
 
 
 
-Note that the results differ slightly. When using StandardScaler, centering and scaling happen independently on each feature by computing the relevant statistics. Mean and standard deviation are then stored to be used on later data using the transform method. You can look at the histograms again, but it is expected to look exactly the same again.
+Finally, create another set of histograms, this time on `data_std_2`.  Use the same parameters as we have above. 
 
 
 ```python
@@ -702,10 +737,16 @@ ax = data_std_2.hist(bins=6, xlabelsize= 8, ylabelsize= 8 , figsize=(8,8))
 ```
 
 
-![png](output_29_0.png)
+![png](output_34_0.png)
 
+
+Note that the results differ slightly. When using StandardScaler, centering and scaling happen independently on each feature by computing the relevant statistics. Mean and standard deviation are then stored to be used on later data using the transform method. You can look at the histograms again, but it is expected to look exactly the same again.
 
 ## 4. The correlation matrix
+
+**_NOTE:_** This section contains **_a lot_** of math.  Understanding how the math behind PCA and eigendecomposition works is important, because it provides great insight  into how the algorithm actually works under the hood, and can inform our use to make sure we're using PCA correctly. 
+
+With that being said, don't feel overwhelmed--on the job, you'll almost never compute this manually. Instead, you'll rely on heavily optimized, industry-standard tools such as sklearn to transform data with PCA.  
 
 We've actually looked at the heatmap already, but now let's formally compute the correlation matrix. As you saw in the lecture, the sample covariance matrix is given by:
 
@@ -812,7 +853,7 @@ cov_mat
 
 
 
-Or, even easier
+Or, even easier, we can make use of the `.cov` function inside of numpy, and just pass in the transposed version of our data.  
 
 
 ```python
@@ -832,12 +873,21 @@ np.cov(data_std.T)
 
 ## 5.  Eigendecomposition in Python
 
-In Python, numpy stores quite a few linear algebra functions which makes eigendecomposition easy.
+In Python, numpy stores quite a few linear algebra functions which makes eigendecomposition easy, stored inside the `linalg` module.  
+
+In the cell below, call `linalg.eig()` and pass in the covariance matrix we computed above, `cov_mat`.  
+
+Note that this function returns 2 values:
+
+1. An 1-d array of eigenvalues
+1. A 2-d array of eigenvectors
 
 
 ```python
 eig_values, eig_vectors = np.linalg.eig(cov_mat)
 ```
+
+Now, let's inspect the eiginvalues and eigenvectors this function returned:
 
 
 ```python
@@ -850,6 +900,24 @@ eig_values
     array([2.42246795, 1.10467489, 0.2407653 , 0.73848053, 0.49361132])
 
 
+
+
+```python
+eig_vectors
+```
+
+
+
+
+    array([[ 0.49614868,  0.30861972,  0.49989887,  0.38639398, -0.50930459],
+           [ 0.57570231,  0.04380176, -0.77263501,  0.26247227,  0.02813712],
+           [ 0.33956956,  0.43080905, -0.00788224, -0.83463952, -0.0491    ],
+           [ 0.22498981, -0.79677694,  0.0059668 , -0.29160659, -0.47901574],
+           [ 0.50643404, -0.28702846,  0.39120139,  0.01226602,  0.71270629]])
+
+
+
+And finally, we'll use a list comprehension to compute the eigenpairs.  Run the cell below. 
 
 
 ```python
@@ -881,20 +949,6 @@ eig_pairs
 
 
 ```python
-sum(np.square(eig_vectors))
-```
-
-
-
-
-    array([1., 1., 1., 1., 1.])
-
-
-
-or, alternatively
-
-
-```python
 for eigvec in eig_vectors:
     print(np.linalg.norm(eigvec))
 ```
@@ -906,7 +960,23 @@ for eigvec in eig_vectors:
     1.0000000000000002
     
 
+or, alternatively
+
+
+```python
+sum(np.square(eig_vectors))
+```
+
+
+
+
+    array([1., 1., 1., 1., 1.])
+
+
+
 ### 5.2 Let's check if our eigenvectors are uncorrelated. 
+
+Run the cells below to create a correlation heatmap as we did at the top of the lab, but this time on a correlation matrix of the eigenvectors we've computed.  
 
 
 ```python
@@ -942,7 +1012,7 @@ plt.show();
 ```
 
 
-![png](output_50_0.png)
+![png](output_59_0.png)
 
 
 
